@@ -1,0 +1,16 @@
+{
+    "name": "Medellin Erotic massage",
+    "short_name": "Medellin Erotic Massage \ud83c\udf0d",
+    "description": "Discover the ultimate erotic massage in Medellin experience amid eternal spring weather. Explore 0 verified venues in top neighborhoods. Book your sensual escape in Colombia's City of Flowers today!",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#e91e63",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

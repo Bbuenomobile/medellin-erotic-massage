@@ -1,0 +1,592 @@
+---
+import Base from '../layouts/Base.astro';
+import ListingCard from '../components/ListingCard.astro';
+
+export async function getStaticPaths() {
+    // Safe fetch helper defined inside getStaticPaths for Astro build context
+    async function safeFetch(url: string): Promise<any[]> {
+        try {
+            console.log('[getStaticPaths] Fetching:', url);
+            const res = await fetch(url, { 
+                headers: { 
+                    'Accept': 'application/json',
+                    'User-Agent': 'ErotikMaps-Satellite-Builder/1.0',
+                    'X-Satellite-Build': 'true'
+                } 
+            });
+            if (!res.ok) {
+                console.error('[getStaticPaths] API error: ' + res.status);
+                return [];
+            }
+            const ct = res.headers.get('content-type') || '';
+            if (!ct.includes('application/json')) {
+                console.error('[getStaticPaths] Not JSON: ' + ct);
+                return [];
+            }
+            const data = await res.json();
+            return data.data || [];
+        } catch (e) {
+            console.error('[getStaticPaths] Fetch failed:', e);
+            return [];
+        }
+    }
+    
+    const apiUrl = 'https://www.erotikmaps.com/api/v1/satellite/listings?city=medellin&category=erotic-massage&limit=100';
+    const listings = await safeFetch(apiUrl);
+    
+    if (listings.length === 0) {
+        console.warn('[getStaticPaths] No listings found, returning empty paths');
+        return [];
+    }
+    
+    // Filter out any listings without valid slugs
+    const validListings = listings.filter((l: any) => l && l.slug && typeof l.slug === 'string' && l.slug.length > 0);
+    
+    if (validListings.length === 0) {
+        console.warn('[getStaticPaths] No valid listings after filtering');
+        return [];
+    }
+    
+    return validListings.map((listing: any, index: number) => ({
+        params: { slug: listing.slug },
+        props: { 
+            listing,
+            allListings: validListings,
+            position: index + 1,
+            total: validListings.length
+        }
+    }));
+}
+
+const { listing, allListings, position, total } = Astro.props;
+const canonicalUrl = `https://medellineroticmassage.com/${listing.slug}`;
+
+// Fetch full listing details with error handling
+let fullListing = listing;
+try {
+    const detailUrl = `https://www.erotikmaps.com/api/v1/satellite/listing/${listing.slug}`;
+    console.log('[listing] Fetching details:', detailUrl);
+    const response = await fetch(detailUrl, { headers: { 'Accept': 'application/json' } });
+    if (response.ok) {
+        const ct = response.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+            const data = await response.json();
+            if (data.success && data.data) {
+                fullListing = { ...listing, ...data.data };
+            }
+        }
+    }
+} catch (error) {
+    console.error('[listing] Failed to fetch details:', error);
+    // Continue with basic listing data
+}
+
+// Get similar listings (excluding current)
+const similarListings = allListings
+    .filter((l: any) => l.slug !== listing.slug)
+    .slice(0, 4);
+
+// Get prev/next for navigation
+const prevListing = position > 1 ? allListings[position - 2] : null;
+const nextListing = position < total ? allListings[position] : null;
+
+// Generate meta description with unique content
+const metaDesc = fullListing.description 
+    ? fullListing.description.replace(/<[^>]*>/g, '').substring(0, 155) + '...'
+    : `Discover ${listing.name}, one of the top Erotic massage venues in Medellin. Contact info, photos, services & reviews.`;
+---
+
+<Base 
+    title={`${listing.name} - Erotic massage in Medellin | Medellin Erotic massage`}
+    description={metaDesc}
+    canonical={canonicalUrl}
+    image={listing.thumbnail}
+    type="business.business"
+>
+    <article class="listing-detail" itemscope itemtype="https://schema.org/LocalBusiness">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
+                <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+                    <meta itemprop="position" content="1" />
+                </span>
+                &rsaquo;
+                <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/#all-listings" itemprop="item"><span itemprop="name">Erotic massage</span></a>
+                    <meta itemprop="position" content="2" />
+                </span>
+                &rsaquo;
+                <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <span itemprop="name">{listing.name}</span>
+                    <meta itemprop="position" content="3" />
+                </span>
+            </nav>
+            
+            <!-- Header - Clean compact design -->
+            <header class="listing-header">
+                <div class="listing-hero-wrapper">
+                    <img 
+                        src={listing.thumbnail} 
+                        alt={`${listing.name} - Erotic massage in Medellin`}
+                        class="listing-hero-image"
+                        loading="eager"
+                        itemprop="image"
+                    />
+                </div>
+                <div class="listing-header-content">
+                    <h1 itemprop="name">{listing.name}</h1>
+                    <p class="location" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+                        📍 <span itemprop="addressLocality">{listing.city}</span>, 
+                        <span itemprop="addressCountry">{listing.country}</span>
+                    </p>
+                    {listing.is_premium && <span class="badge premium">⭐ Premium</span>}
+                    <p class="listing-position">Listing {position} of {total} in Medellin</p>
+                </div>
+            </header>
+            
+            <!-- Prev/Next Navigation -->
+            <nav class="listing-nav">
+                {prevListing && (
+                    <a href={`/${prevListing.slug}`} class="nav-prev">
+                        &larr; Previous: {prevListing.name}
+                    </a>
+                )}
+                {!prevListing && <span></span>}
+                {nextListing && (
+                    <a href={`/${nextListing.slug}`} class="nav-next">
+                        Next: {nextListing.name} &rarr;
+                    </a>
+                )}
+            </nav>
+            
+            <!-- Content -->
+            <div class="listing-content">
+                <div class="main-content">
+                    <!-- About Section -->
+                    {fullListing.description && (
+                        <section class="section">
+                            <h2>About {listing.name}</h2>
+                            <div itemprop="description" set:html={fullListing.description}></div>
+                        </section>
+                    )}
+                    
+                    <!-- Services Section (if available) -->
+                    {fullListing.services && fullListing.services.length > 0 && (
+                        <section class="section">
+                            <h2>Services Offered</h2>
+                            <ul class="services-list">
+                                {fullListing.services.map((service: string) => (
+                                    <li>{service}</li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+                    
+                    <!-- Gallery - Organized Grid -->
+                    {fullListing.gallery && fullListing.gallery.length > 0 && (
+                        <section class="section gallery-section">
+                            <h2>📸 Photo & Video Gallery</h2>
+                            <p class="gallery-intro">{fullListing.gallery.length} media items from {listing.name}</p>
+                            <div class="gallery-grid">
+                                {fullListing.gallery.slice(0, 12).map((item: any, idx: number) => (
+                                    <div class={`gallery-item ${idx === 0 ? 'featured' : ''}`} key={idx}>
+                                        {item.type === 'image' ? (
+                                            <img 
+                                                src={item.url} 
+                                                alt={`${listing.name} - Photo ${idx + 1}`}
+                                                loading="lazy"
+                                                class="gallery-media"
+                                            />
+                                        ) : (
+                                            <div class="video-wrapper">
+                                                <video 
+                                                    src={item.url} 
+                                                    controls 
+                                                    preload="metadata"
+                                                    poster={listing.thumbnail}
+                                                    class="gallery-media"
+                                                ></video>
+                                                <span class="video-badge">▶ Video</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {fullListing.gallery.length > 12 && (
+                                <p class="gallery-more">+ {fullListing.gallery.length - 12} more photos available</p>
+                            )}
+                        </section>
+                    )}
+                    
+                    <!-- Why Choose Section - Unique content -->
+                    <section class="section why-choose">
+                        <h2>Why Choose {listing.name}?</h2>
+                        <p>
+                            Looking for quality Erotic massage services in Medellin? 
+                            {listing.name} is one of the {total} verified establishments we feature in the Medellin area.
+                            {listing.is_premium ? " As a premium listing, this venue has been verified for quality and reliability." : ""}
+                        </p>
+                        <ul>
+                            <li>✓ Verified Erotic massage establishment</li>
+                            <li>✓ Located in Medellin, Colombia</li>
+                            <li>✓ Direct contact information available</li>
+                            {fullListing.gallery && fullListing.gallery.length > 0 && (
+                                <li>✓ {fullListing.gallery.length} photos & videos available</li>
+                            )}
+                        </ul>
+                    </section>
+                </div>
+                
+                <aside class="sidebar">
+                    <!-- Contact Card - Prominently displayed -->
+                    <div class="contact-card-premium">
+                        <div class="contact-header">
+                            <h3>📞 Contact {listing.name}</h3>
+                            <p class="contact-subtitle">Get in touch directly</p>
+                        </div>
+                        
+                        <!-- WhatsApp CTA - Most prominent -->
+                        {fullListing.whatsapp && (
+                            <a 
+                                href={`https://wa.me/${fullListing.whatsapp.replace(/[^0-9]/g, '')}?text=Hi! I found you on the Erotic massage directory and I'm interested in your services.`}
+                                class="whatsapp-cta"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                <svg viewBox="0 0 24 24" fill="currentColor" class="wa-icon">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                </svg>
+                                <span class="wa-text">
+                                    <strong>Chat on WhatsApp</strong>
+                                    <small>Tap to message instantly</small>
+                                </span>
+                            </a>
+                        )}
+                        
+                        <!-- Phone Call Button -->
+                        {fullListing.phone && (
+                            <a href={`tel:${fullListing.phone}`} class="contact-btn phone-btn" itemprop="telephone">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                                </svg>
+                                <span>{fullListing.phone}</span>
+                            </a>
+                        )}
+                        
+                        <!-- Email -->
+                        {fullListing.email && (
+                            <a href={`mailto:${fullListing.email}`} class="contact-btn email-btn" itemprop="email">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                                <span>{fullListing.email}</span>
+                            </a>
+                        )}
+                        
+                        <!-- Website -->
+                        {fullListing.website && (
+                            <a href={fullListing.website} target="_blank" rel="noopener" class="contact-btn website-btn" itemprop="url">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="2" y1="12" x2="22" y2="12"/>
+                                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                                </svg>
+                                <span>Visit Website</span>
+                            </a>
+                        )}
+                        
+                        <!-- Location -->
+                        {fullListing.address && (
+                            <div class="contact-location">
+                                <h4>📍 Location</h4>
+                                <p itemprop="streetAddress">{fullListing.address}</p>
+                                <p class="city-info">{listing.city}, {listing.country}</p>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <!-- View on ErotikMaps -->
+                    <div class="view-original">
+                        <a href={listing.url} target="_blank" rel="dofollow" class="btn-erotikmaps">
+                            View Full Profile on ErotikMaps →
+                        </a>
+                    </div>
+                    
+                    <!-- Quick Links -->
+                    <div class="quick-links">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href="/">← All Erotic massage in Medellin</a></li>
+                            <li><a href="/#faq">Frequently Asked Questions</a></li>
+                            <li><a href="/#premium">Premium Listings</a></li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+            
+            <!-- Similar Listings -->
+            {similarListings.length > 0 && (
+                <section class="similar-listings">
+                    <h2>Similar Erotic massage in Medellin</h2>
+                    <p>Discover other venues that might interest you:</p>
+                    <div class="listings-grid small">
+                        {similarListings.map((l: any) => (
+                            <ListingCard listing={l} />
+                        ))}
+                    </div>
+                    <p class="view-all">
+                        <a href="/" class="btn-secondary">View All {total} Listings →</a>
+                    </p>
+                </section>
+            )}
+        </div>
+    </article>
+    
+    <!-- Schema.org LocalBusiness -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": listing.name,
+        "image": listing.thumbnail,
+        "url": canonicalUrl,
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Medellin",
+            "addressCountry": "Colombia"
+        },
+        ...(fullListing.phone && { "telephone": fullListing.phone }),
+        ...(fullListing.email && { "email": fullListing.email }),
+        "priceRange": "$$"
+    })}></script>
+    
+    <!-- Schema.org WebPage -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": `${listing.name} - Erotic massage in Medellin`,
+        "url": canonicalUrl,
+        "isPartOf": {
+            "@type": "WebSite",
+            "name": "Medellin Erotic massage",
+            "url": "https://medellineroticmassage.com"
+        },
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://medellineroticmassage.com"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Erotic massage",
+                    "item": "https://medellineroticmassage.com/#all-listings"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": listing.name,
+                    "item": canonicalUrl
+                }
+            ]
+        }
+    })}></script>
+    
+    <!-- Sticky Footer - Contact CTAs (WhatsApp & Call only) -->
+    {(fullListing.whatsapp || fullListing.phone) && (
+        <div class="sticky-contact-bar">
+            {fullListing.whatsapp && (
+                <a 
+                    href={`https://wa.me/${fullListing.whatsapp.replace(/[^0-9]/g, '')}?text=Hi! I found you on the Erotic massage directory.`}
+                    class="sticky-btn whatsapp"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    <span>WhatsApp</span>
+                </a>
+            )}
+            {fullListing.phone && (
+                <a href={`tel:${fullListing.phone}`} class="sticky-btn call">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                    <span>Call</span>
+                </a>
+            )}
+        </div>
+    )}
+</Base>
+
+<style>
+    /* Sticky Contact Bar */
+    .sticky-contact-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        background: white;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+        z-index: 999;
+        padding: 10px;
+        gap: 8px;
+    }
+    .sticky-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .sticky-btn svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+    .sticky-btn.whatsapp {
+        background: #25D366;
+        color: white;
+    }
+    .sticky-btn.whatsapp:hover {
+        background: #128C7E;
+    }
+    .sticky-btn.call {
+        background: #2563eb;
+        color: white;
+    }
+    .sticky-btn.call:hover {
+        background: #1d4ed8;
+    }
+    .sticky-btn.add-listing {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+    .sticky-btn.add-listing:hover {
+        transform: scale(1.02);
+    }
+    
+    /* Add padding at bottom so content doesn't get hidden */
+    .listing-detail {
+        padding-bottom: 100px;
+    }
+    
+    @media (max-width: 500px) {
+        .sticky-btn span {
+            display: none;
+        }
+        .sticky-btn {
+            padding: 14px;
+        }
+        .sticky-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+    
+    .listing-position {
+        font-size: 13px;
+        color: var(--text-light);
+        margin-top: 10px;
+    }
+    .listing-nav {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        margin: 15px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+    .listing-nav a {
+        font-size: 14px;
+    }
+    .nav-prev { color: var(--text-light); }
+    .nav-next { color: var(--primary); }
+    .services-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        list-style: none;
+        padding: 0;
+    }
+    .services-list li {
+        background: var(--bg);
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    .why-choose ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 15px;
+    }
+    .why-choose li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .quick-links {
+        background: var(--bg);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .quick-links h4 {
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    .quick-links ul {
+        list-style: none;
+        padding: 0;
+    }
+    .quick-links li {
+        margin-bottom: 10px;
+    }
+    .quick-links a {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+    .quick-links a:hover {
+        color: var(--primary);
+    }
+    .similar-listings {
+        margin-top: 50px;
+        padding-top: 40px;
+        border-top: 2px solid var(--border);
+    }
+    .similar-listings h2 {
+        margin-bottom: 10px;
+    }
+    .similar-listings > p {
+        color: var(--text-light);
+        margin-bottom: 25px;
+    }
+    .listings-grid.small {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    .view-all {
+        text-align: center;
+        margin-top: 30px;
+    }
+    .btn-secondary {
+        display: inline-block;
+        padding: 12px 30px;
+        background: var(--bg);
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    .btn-secondary:hover {
+        background: var(--primary);
+        color: white;
+    }
+</style>

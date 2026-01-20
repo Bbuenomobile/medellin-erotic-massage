@@ -1,0 +1,533 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  image?: string;
+  type?: string;
+  noindex?: boolean;
+}
+
+const { 
+    title, 
+    description, 
+    canonical,
+    image = 'https://erotikmaps.com/images/og-default.jpg',
+    type = 'website',
+    noindex = false
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || '';
+const currentUrl = canonical || Astro.url.href;
+const siteName = 'Medellin Erotic Massage 🌍';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Robots -->
+    {noindex ? (
+        <meta name="robots" content="noindex, nofollow">
+    ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    )}
+    
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title}>
+    <meta name="description" content={description}>
+    <meta name="keywords" content="Medellin, erotic massage, adult massage, Colombia">
+    <meta name="author" content="ErotikMaps">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={currentUrl}>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type}>
+    <meta property="og:site_name" content={siteName}>
+    <meta property="og:url" content={currentUrl}>
+    <meta property="og:title" content={title}>
+    <meta property="og:description" content={description}>
+    <meta property="og:image" content={image}>
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content={currentUrl}>
+    <meta name="twitter:title" content={title}>
+    <meta name="twitter:description" content={description}>
+    <meta name="twitter:image" content={image}>
+    
+    <!-- Favicon & PWA -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#e91e63">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://erotikmaps.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- JSON-LD Structured Data - WebSite -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": siteName,
+        "url": siteUrl,
+        "description": description,
+        "publisher": {
+            "@type": "Organization",
+            "name": "ErotikMaps",
+            "url": "https://erotikmaps.com",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://erotikmaps.com/images/logo.png"
+            }
+        },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": siteUrl + "/?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    })}></script>
+    
+    <style is:global>
+        :root {
+            --primary: #e91e63;
+            --secondary: #9C27B0;
+            --text: #1a1a2e;
+            --text-light: #666;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* CRITICAL: Prevent horizontal scroll on mobile */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        /* Force all images to stay within container */
+        img, video {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+        
+        /* ============================================
+           HEADER - CRITICAL STYLES INLINE
+           ============================================ */
+        .site-header {
+            background: linear-gradient(135deg, #e91e63 0%, #9C27B0 100%);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .site-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none !important;
+            color: white !important;
+        }
+
+        .logo-emoji {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .logo-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white !important;
+            letter-spacing: -0.5px;
+        }
+
+        .site-logo:hover {
+            text-decoration: none !important;
+            opacity: 0.95;
+        }
+
+        .site-nav {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .site-nav a {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+            padding: 6px 4px;
+        }
+
+        .site-nav a:hover {
+            color: white !important;
+            text-decoration: none !important;
+        }
+
+        .nav-btn {
+            background: white !important;
+            color: #e91e63 !important;
+            padding: 12px 24px !important;
+            border-radius: 30px;
+            font-weight: 700 !important;
+            font-size: 0.95rem !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25) !important;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .mobile-menu-btn svg {
+            width: 26px;
+            height: 26px;
+            color: white;
+        }
+
+        /* Mobile Menu Overlay */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(160deg, #e91e63 0%, #9C27B0 100%);
+            z-index: 9999;
+            padding: 100px 30px 30px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu.open {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mobile-menu a {
+            color: white !important;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-decoration: none !important;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .mobile-menu .mobile-cta {
+            background: white !important;
+            color: #e91e63 !important;
+            padding: 18px 28px !important;
+            border-radius: 35px;
+            text-align: center;
+            margin-top: 30px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .mobile-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 50%;
+        }
+
+        .mobile-close svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .header-inner {
+                padding: 14px 16px;
+            }
+            .site-nav {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .container {
+                padding: 0 16px;
+            }
+            main {
+                overflow-x: hidden;
+            }
+        }
+    </style>
+    
+    <link rel="stylesheet" href="/styles/main.css">
+    
+    <!-- Smooth scrolling polyfill for older browsers -->
+    <script>
+        // Header scroll effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.querySelector('.header');
+            if (header) {
+                window.addEventListener('scroll', function() {
+                    if (window.scrollY > 50) {
+                        header.classList.add('scrolled');
+                    } else {
+                        header.classList.remove('scrolled');
+                    }
+                });
+            }
+            
+            // Mobile menu toggle
+            const menuToggle = document.querySelector('.menu-toggle');
+            const nav = document.querySelector('.nav');
+            if (menuToggle && nav) {
+                menuToggle.addEventListener('click', function() {
+                    nav.classList.toggle('active');
+                    menuToggle.classList.toggle('active');
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-logo">
+                <span class="logo-emoji">💆</span>
+                <span class="logo-name">Medellin Erotic Massage 🌍</span>
+            </a>
+            <nav class="site-nav">
+                <a href="/">Home</a>
+                <a href="/#all-listings">Venues</a>
+                <a href="/advertise">Advertise</a>
+                <a href="/contact-business">Contact</a>
+                <a href="https://gopremium.app/create-listing" rel="nofollow" class="nav-btn">+ Add Listing</a>
+            </nav>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12h18M3 6h18M3 18h18"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+    
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobile-menu">
+        <button class="mobile-close" aria-label="Close menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/#all-listings">Venues</a>
+            <a href="/advertise">Advertise</a>
+            <a href="/contact-business">Contact</a>
+            <a href="https://gopremium.app/create-listing" rel="nofollow" class="mobile-cta">+ Add Listing</a>
+        </nav>
+    </div>
+    
+    <script is:inline>
+    // Mobile menu open
+    document.querySelector('.mobile-menu-btn')?.addEventListener('click', () => {
+        document.querySelector('.mobile-menu')?.classList.add('open');
+        document.body.classList.add('menu-open');
+    });
+    // Mobile menu close button
+    document.querySelector('.mobile-close')?.addEventListener('click', () => {
+        document.querySelector('.mobile-menu')?.classList.remove('open');
+        document.body.classList.remove('menu-open');
+    });
+    // Close on link click
+    document.querySelectorAll('.mobile-menu a').forEach(a => {
+        a.addEventListener('click', () => {
+            document.querySelector('.mobile-menu')?.classList.remove('open');
+            document.body.classList.remove('menu-open');
+        });
+    });
+    </script>
+    
+    <main>
+        <slot />
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <!-- Free Listing CTA Banner -->
+            <div class="footer-cta-banner">
+                <div class="cta-content">
+                    <span class="cta-badge">✨ FREE</span>
+                    <div class="cta-text">
+                        <h3>Own a Erotic Massage business in Medellin?</h3>
+                        <p>Add your venue to our directory <strong>100% FREE</strong> and get found by thousands of clients searching for erotic massage, spa services, and adult wellness experiences in Medellin.</p>
+                    </div>
+                </div>
+                <a href="https://gopremium.app/create-listing" rel="nofollow" class="cta-button">
+                    Add Your Venue Free →
+                </a>
+            </div>
+            
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <p class="footer-logo">💆 Medellin Erotic Massage 🌍</p>
+                    <p>Your trusted guide to premium erotic massage and adult wellness services in Medellin. We connect discerning clients with the finest establishments.</p>
+                    
+                    <!-- Contact Info -->
+                    <div class="footer-contact">
+                        <a href="https://wa.me/40732198525" class="footer-whatsapp" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                            +40 732 198 525
+                        </a>
+                        <a href="mailto:office@erotikmaps.com" class="footer-email">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            office@erotikmaps.com
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <p class="footer-title">Quick Links</p>
+                    <nav class="footer-nav">
+                        <a href="/">Homepage</a>
+                        <a href="#listings">All Venues</a>
+                        <a href="#faq">FAQ</a>
+                        <a href="https://gopremium.app/create-listing" rel="nofollow">Submit Your Venue</a>
+                    </nav>
+                </div>
+                <div class="footer-links">
+                    <p class="footer-title">Categories</p>
+                    <nav class="footer-nav">
+                        <a href="https://erotikmaps.com/erotic-massage" rel="dofollow" title="Erotic massage venues worldwide">Erotic Massage</a>
+                        <a href="https://erotikmaps.com/gentlemens-club" rel="dofollow" title="Gentlemen's clubs">Gentlemen's Clubs</a>
+                        <a href="https://erotikmaps.com/swinger-club" rel="dofollow" title="Swinger clubs">Swinger Clubs</a>
+                        <a href="https://erotikmaps.com/nuru-massage" rel="dofollow" title="Nuru massage parlors">Nuru Massage</a>
+                        <a href="https://erotikmaps.com/tantric-massage" rel="dofollow" title="Tantric massage">Tantric Massage</a>
+                    </nav>
+                </div>
+                <div class="footer-links">
+                    <p class="footer-title">Top Destinations</p>
+                    <nav class="footer-nav">
+                        <a href="https://erotikmaps.com/erotic-massage/germany" rel="dofollow" title="Erotic massage Germany">Germany</a>
+                        <a href="https://erotikmaps.com/erotic-massage/spain" rel="dofollow" title="Erotic massage Spain">Spain</a>
+                        <a href="https://erotikmaps.com/erotic-massage/czech-republic" rel="dofollow" title="Erotic massage Czech Republic">Czech Republic</a>
+                        <a href="https://erotikmaps.com/erotic-massage/thailand" rel="dofollow" title="Erotic massage Thailand">Thailand</a>
+                        <a href="https://erotikmaps.com/erotic-massage/" rel="dofollow" title="Erotic massage in Colombia">Colombia</a>
+                    </nav>
+                </div>
+                <div class="footer-links">
+                    <p class="footer-title">For Business</p>
+                    <nav class="footer-nav">
+                        <a href="https://gopremium.app/create-listing" rel="nofollow" class="highlight-link">✨ Add Listing FREE</a>
+                        <a href="/advertise">📢 Premium Advertising</a>
+                        <a href="/contact-business">📧 Business Inquiries</a>
+                        <a href="https://erotikmaps.com" rel="dofollow" title="ErotikMaps Network">ErotikMaps Network</a>
+                    </nav>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; {new Date().getFullYear()} Medellin Erotic Massage 🌍. Part of <a href="https://erotikmaps.com" rel="dofollow" title="ErotikMaps - The world's adult entertainment directory">ErotikMaps</a> Network.</p>
+                <div class="footer-legal">
+                    <a href="/privacy">Privacy</a>
+                    <a href="/terms">Terms</a>
+                    <a href="https://wa.me/40732198525" target="_blank" rel="noopener">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scroll to top button -->
+    <button class="scroll-top" aria-label="Scroll to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M18 15l-6-6-6 6"/>
+        </svg>
+    </button>
+    
+    <script>
+        // Show/hide scroll button
+        const scrollBtn = document.querySelector('.scroll-top');
+        if (scrollBtn) {
+            window.addEventListener('scroll', () => {
+                scrollBtn.classList.toggle('visible', window.scrollY > 500);
+            });
+        }
+    </script>
+</body>
+</html>

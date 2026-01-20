@@ -1,0 +1,355 @@
+---
+import Base from '../layouts/Base.astro';
+import ListingCard from '../components/ListingCard.astro';
+import InternalLinks from '../components/InternalLinks.astro';
+import OwnerCTA from '../components/OwnerCTA.astro';
+import CategoryNav from '../components/CategoryNav.astro';
+import NetworkLinks from '../components/NetworkLinks.astro';
+
+// Safe fetch helper for build-time API calls
+async function safeFetchJson(url: string): Promise<any[]> {
+    try {
+        console.log('Fetching:', url);
+        const res = await fetch(url, {
+            headers: { 
+                'Accept': 'application/json',
+                'User-Agent': 'ErotikMaps-Satellite-Builder/1.0',
+                'X-Satellite-Build': 'true'
+            }
+        });
+        
+        if (!res.ok) {
+            console.error('API returned ' + res.status + ': ' + res.statusText);
+            return [];
+        }
+        
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            console.error('Expected JSON but got: ' + ct);
+            return [];
+        }
+        
+        const data = await res.json();
+        return data.data || [];
+    } catch (error) {
+        console.error('Fetch failed:', error);
+        return [];
+    }
+}
+
+// Fetch listings from API at build time
+const apiUrl = 'https://www.erotikmaps.com/api/v1/satellite/listings?city=medellin&category=erotic-massage&limit=100';
+const listings = await safeFetchJson(apiUrl);
+
+const faq = [{"question":"What is the best Erotic massage in Medellin?","answer":"<p>Determining the <strong>best erotic massage in Medellin<\/strong> depends on your vibe—El Poblado's upscale parlors like those near Parque Lleras offer luxurious tantric sessions with expert providers using local coffee scrubs, while Laureles spots provide a chill, authentic Paisa experience. Look for venues with glowing reviews on discreet forums, emphasizing hygiene and skilled happy endings. Currently with 0 verified listings here, scout via trusted taxi drivers or apps, prioritizing consent-focused atmospheres amid Medellin's 72°F eternal spring. Personalized service reigns supreme.<\/p>"},{"question":"How much does Erotic massage cost in Medellin?","answer":"<p><strong>Erotic massage in Medellin<\/strong> typically costs 150,000-300,000 COP ($35-70 USD) for a 60-minute standard session, escalating to 400,000+ COP ($95+) for 90-minute VIP tantric or duo options in El Poblado. Add 20-50,000 COP tips for extras like body-to-body slides. Prices reflect Colombia's favorable exchange and Paisa hospitality—no hidden fees if you negotiate upfront. Always pay in cash pesos; upscale venues accept cards but expect surcharges. Budget-friendly yet luxurious compared to global rates.<\/p>"},{"question":"Is Erotic massage legal in Colombia?","answer":"<p>Erotic massage itself is legal in Colombia, including <strong>Medellin<\/strong>, as massage therapy falls under wellness services. However, explicit prostitution is regulated—venues operate in a gray area with private, consensual adult services common. Police raids are rare in tourist zones like El Poblado, but stick to reputable spots to avoid scams. Visitors should carry ID, respect age-of-consent laws (14, but services 18+), and know health checks are standard. Discretion is key in this culturally conservative yet progressively open society.<\/p>"},{"question":"What are the best areas for Erotic massage in Medellin?","answer":"<p>The prime areas for <strong>erotic massage in Medellin<\/strong> are <strong>El Poblado<\/strong> for high-end, discreet parlors amid trendy bars and eternal spring breezes; <strong>Provenza<\/strong> within it for boutique vibes near rooftop parties; and <strong>Laureles<\/strong> for relaxed, local-flavored sessions close to football matches at Atanasio Girardot. Avoid riskier Comuna 13 outskirts—stick to well-lit, tourist-friendly zones with Uber access. These neighborhoods blend safety, sensuality, and Paisa charm perfectly.<\/p>"},{"question":"What should I know before visiting a Erotic massage venue in Medellin?","answer":"<p>Before an <strong>erotic massage in Medellin<\/strong>, learn basic Spanish phrases like '<em>¿Cuánto por completo?<\/em>' (how much full service?) and arrive clean-showered. Dress casually to blend with the 72°F weather; book via WhatsApp for popular spots. Confirm all services, prices, and extras upfront—negotiate politely in the Paisa '<strong>chévere<\/strong>' style. Use reputable transport like Uber, tip generously, and prioritize venues with reviews. Hydrate post-session amid the altitude; condoms mandatory for safety in this sunny, welcoming city.<\/p>"}];
+const canonicalUrl = 'https://medellineroticmassage.com/';
+
+// HTML content from AI (stored as variables for set:html)
+const introHtml = `<p>Medellin, the <strong>City of Eternal Spring</strong> nestled in the lush Aburrá Valley, pulses with a unique blend of Paisa warmth and sultry energy that makes <em>erotic massage in Medellin</em> an unforgettable indulgence. Unlike anywhere else, this Colombian gem fuses its famous <strong>amable</strong> hospitality—think friendly smiles and rolling 'r's in rapid Spanish—with intimate, body-awakening sessions that celebrate the city's liberated spirit. Visitors flock here not just for the perfect 72°F weather year-round, but for venues where skilled masseuses draw from local traditions of touch and rhythm, echoing the salsa beats of nearby Comuna 10.</p><p>What sets <strong>erotic massage in Medellin</strong> apart is the cultural authenticity: expect sessions infused with Antioquian sensuality, where providers often incorporate elements of traditional Colombian botanicals like aromatic coffee oils or Andean herbs for a truly local aroma. Neighborhoods like El Poblado, with its trendy rooftop bars, and Provenza's bohemian vibe, host discreet parlors that cater to discerning travelers seeking relaxation amid the city's transformation from past shadows to modern allure. Medellin's reputation for this scene has grown since the 2010s, as tourism boomed alongside its metro system's expansion, turning once-edgy districts into hubs of pleasurable discovery.</p><p>In these venues, anticipate personalized attention in private, softly lit rooms adorned with colorful <em>vueltiaos</em> baskets or tropical orchids, reflecting Medellin's floral heritage from the famous Desfile de Flores. Whether you're a solo adventurer or couple exploring, <strong>erotic massage in Medellin</strong> promises a safe, consensual escape that leaves you rejuvenated, ready to dive back into the city's cable car rides over verdant hills or evening arepa tastings.</p><p>Medellin's scene thrives on discretion and mutual respect, with providers who embody the <em>parranda</em> spirit—joyful and uninhibited. From Poblado's upscale spas to Laureles' laid-back spots, each experience highlights why this city ranks high for sensual tourism, blending relaxation with the electric pulse of Colombian passion.</p>
+
+<h2>About Medellin</h2>
+<p>Medellin captivates as Colombia's innovation capital, where cutting-edge metro lines and sky-high <strong>metrocables</strong> whisk you over hillside barrios to panoramic views of the Andes. Tourism thrives on its eternal spring climate—consistently 22-26°C—perfect for outdoor pursuits like hiking to <em>Piedra del Peñol</em> or strolling the lush Jardín Botánico. Culturally, the Paisa people shine through festivals like the <strong>Feria de las Flores</strong>, parading massive flower silos amid live vallenato music.</p><p>Nightlife ignites in El Poblado's Parque Lleras, where salsa clubs thump with reggaeton rhythms and craft <em>aguardiente</em> flows freely. Beyond partying, Medellin's street art in Comuna 13 tells tales of resilience, while coffee tours in nearby pueblos offer a taste of authentic Colombian brew. It's a destination where adventure meets <strong>erotic massage in Medellin</strong> allure seamlessly.</p>
+
+<h2>What to Expect</h2>
+<p>At an <strong>erotic massage in Medellin</strong>, expect a warm welcome in Spanish-accented English, starting with a private consultation to tailor your session—full body, tantric, or prostate focus. Masseuses, often lithe and trained in local techniques, use warmed oils scented with <em>yerbabuena</em> or panela for slippery, teasing strokes that build to ecstatic releases. Sessions last 60-90 minutes in clean, air-conditioned rooms with ambient salsa undertones.</p><p>Prices range from 150,000-400,000 COP (about $35-95 USD), depending on venue prestige in areas like El Poblado. Tipping 20-50,000 COP is customary for extras. Etiquette demands politeness—greet with a handshake or light kiss on the cheek, respect boundaries, and pay upfront. Always confirm services verbally; condoms are standard for any intimate contact, ensuring hygienic, consensual fun amid Medellin's sunny vibe.</p>`;
+const bottomHtml = `<p>Immerse yourself in the tantalizing world of <strong>erotic massage in Medellin</strong>, where Paisa passion meets professional touch under the eternal spring sun. While our directory currently features <strong>0 verified listings</strong>, this is your gateway to discovering premier venues as they join our curated collection. Stay tuned for exclusive reviews, photos, and insider tips on the best spots in El Poblado and Laureles.</p><p>Ready to elevate your Medellin adventure? Explore nearby attractions like Plaza Botero's voluptuous sculptures—perfect metaphors for the curves awaiting you—then surrender to a session that revives body and soul. Our platform prioritizes verified, safe experiences, ensuring your pleasure is paramount.</p><p><strong>Subscribe now for updates on new erotic massage listings in Medellin</strong> and unlock VIP access to discounts. Don't miss out—claim your sensual Colombian escape today and let Medellin's rhythms awaken your deepest desires!</p>`;
+
+// Split listings for different sections
+const premiumListings = listings.filter((l: any) => l.is_premium);
+const goldListings = listings.filter((l: any) => l.is_gold);
+const regularListings = listings.filter((l: any) => !l.is_premium);
+
+// Get top 5 listings for hero slider (Gold first, then Premium)
+const heroListings = [...goldListings, ...premiumListings.filter((l: any) => !l.is_gold), ...regularListings]
+    .filter((l: any) => l.thumbnail)
+    .slice(0, 5);
+---
+
+<Base 
+    title="Best Erotic Massage Medellin | Top Guide 2025"
+    description="Discover the ultimate erotic massage in Medellin experience amid eternal spring weather. Explore 0 verified venues in top neighborhoods. Book your sensual escape in Colombia&#039;s City of Flowers today!"
+    canonical={canonicalUrl}
+    image={heroListings.length > 0 ? heroListings[0].thumbnail : 'https://erotikmaps.com/images/og-default.jpg'}
+>
+    <!-- Compact Hero Section -->
+    <section class="hero-compact">
+        <div class="container">
+            <h1>Unveil Sensual Secrets: Erotic Massage in Medellin</h1>
+            <p class="hero-subtitle">{listings.length} verified venues in Medellin</p>
+            <div class="hero-badges">
+                {goldListings.length > 0 && <span class="badge-stat gold">⭐ {goldListings.length} Gold</span>}
+                {premiumListings.length > 0 && <span class="badge-stat premium">✨ {premiumListings.length} Premium</span>}
+            </div>
+        </div>
+    </section>
+    
+    <!-- Listings Grid - Mobile First -->
+    <section class="listings" id="all-listings">
+        <div class="container">
+            <div class="listings-grid-3">
+                {listings.map((listing: any) => (
+                    <ListingCard listing={listing} />
+                ))}
+            </div>
+            
+            {listings.length === 0 && (
+                <p class="no-listings">No listings found. Check back soon!</p>
+            )}
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <h2>About Erotic massage in Medellin</h2>
+            <div class="about-content" set:html={introHtml} />
+        </div>
+    </section>
+    
+    <!-- Category Navigation -->
+    <CategoryNav city="Medellin" />
+    
+    <!-- Network Links - Links to other satellite sites -->
+    <NetworkLinks currentCity="Medellin" currentCountry="Colombia" category="erotic-massage" />
+    
+    <!-- Internal Links Section -->
+    <InternalLinks city="Medellin" country="Colombia" category="Erotic massage" />
+    
+    <!-- Owner CTA Section - Encourage venue owners to create listings -->
+    <OwnerCTA city="Medellin" country="Colombia" category="Erotic massage" />
+    
+    <!-- FAQ Section -->
+    {faq && faq.length > 0 && (
+        <section class="faq" id="faq">
+            <div class="container">
+                <h2>Frequently Asked Questions about Erotic massage in Medellin</h2>
+                <div class="faq-list">
+                    {faq.map((item: any, index: number) => (
+                        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                            <h3 itemprop="name">{item.question}</h3>
+                            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                <div itemprop="text" set:html={item.answer} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    )}
+    
+    <!-- Bottom Section / Call to Action -->
+    <section class="bottom-content">
+        <div class="container">
+            <h2>Find Your Perfect Erotic massage Experience in Medellin</h2>
+            <div class="bottom-content-text" set:html={bottomHtml} />
+            
+            <div class="cta-box">
+                <h3>Looking for something specific?</h3>
+                <p>Browse through our {listings.length} listings above, or click on any venue to see full details, photos, and contact information.</p>
+                <a href="#all-listings" class="btn-primary">Browse All Listings</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Individual Listing Links for SEO -->
+    <section class="sitemap-links">
+        <div class="container">
+            <h2>All Erotic massage Venues</h2>
+            <ul class="venue-links">
+                {listings.map((listing: any) => (
+                    <li><a href={`/${listing.slug}`}>{listing.name} - Medellin</a></li>
+                ))}
+            </ul>
+        </div>
+    </section>
+    
+    <!-- Schema.org - ItemList -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Best Erotic Massage Medellin | Top Guide 2025",
+        "description": "Discover the ultimate erotic massage in Medellin experience amid eternal spring weather. Explore 0 verified venues in top neighborhoods. Book your sensual escape in Colombia&#039;s City of Flowers today!",
+        "url": canonicalUrl,
+        "numberOfItems": listings.length,
+        "itemListElement": listings.map((listing: any, index: number) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+                "@type": "LocalBusiness",
+                "name": listing.name,
+                "url": `https://medellineroticmassage.com/${listing.slug}`,
+                "image": listing.thumbnail,
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": "Medellin",
+                    "addressCountry": "Colombia"
+                }
+            }
+        }))
+    })}></script>
+    
+    <!-- Schema.org - FAQPage -->
+    {faq && faq.length > 0 && (
+        <script type="application/ld+json" set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faq.map((item: any) => ({
+                "@type": "Question",
+                "name": item.question,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": item.answer
+                }
+            }))
+        })}></script>
+    )}
+    
+    <!-- Schema.org - WebPage -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Best Erotic Massage Medellin | Top Guide 2025",
+        "description": "Discover the ultimate erotic massage in Medellin experience amid eternal spring weather. Explore 0 verified venues in top neighborhoods. Book your sensual escape in Colombia&#039;s City of Flowers today!",
+        "url": canonicalUrl,
+        "isPartOf": {
+            "@type": "WebSite",
+            "name": "Medellin Erotic Massage 🌍",
+            "url": "https://medellineroticmassage.com"
+        },
+        "about": {
+            "@type": "Thing",
+            "name": "Erotic massage in Medellin"
+        },
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://medellineroticmassage.com"
+                }
+            ]
+        }
+    })}></script>
+</Base>
+
+<style>
+    /* Compact Hero */
+    .hero-compact {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 30px 0;
+        text-align: center;
+    }
+    .hero-compact h1 {
+        font-size: clamp(1.4rem, 4vw, 2rem);
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+    .hero-compact .hero-subtitle {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        margin-bottom: 12px;
+    }
+    .hero-badges {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .badge-stat {
+        background: rgba(255,255,255,0.2);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .badge-stat.gold { background: rgba(255,215,0,0.3); }
+    .badge-stat.premium { background: rgba(255,255,255,0.25); }
+    
+    /* Listings Grid - Mobile First (1 col mobile, 2 tablet, 3 desktop) */
+    .listings-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    @media (min-width: 540px) {
+        .listings-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 900px) {
+        .listings-grid-3 { grid-template-columns: repeat(3, 1fr); }
+    }
+    
+    /* About Section */
+    .about-section {
+        background: var(--card-bg);
+        padding: 40px 0;
+    }
+    .about-section h2 {
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+    }
+    .about-content {
+        color: var(--text-light);
+        line-height: 1.7;
+    }
+    .about-content p { margin-bottom: 12px; }
+    
+    /* Listings Section */
+    .listings {
+        padding: 24px 0;
+    }
+    
+    .section-intro {
+        color: var(--text-light);
+        margin-bottom: 25px;
+    }
+    .premium-section {
+        background: linear-gradient(135deg, #D4AF3710, #F4D03F10);
+    }
+    .cta-box {
+        background: linear-gradient(135deg, var(--primary)10, var(--secondary)10);
+        padding: 30px;
+        border-radius: 12px;
+        margin-top: 30px;
+        text-align: center;
+    }
+    .cta-box h3 {
+        margin-bottom: 10px;
+    }
+    .cta-box p {
+        margin-bottom: 20px;
+        color: var(--text-light);
+    }
+    .sitemap-links {
+        padding: 40px 0;
+        background: var(--bg);
+    }
+    .sitemap-links h2 {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+    .venue-links {
+        column-count: 3;
+        column-gap: 30px;
+        list-style: none;
+        padding: 0;
+    }
+    .venue-links li {
+        margin-bottom: 8px;
+        break-inside: avoid;
+    }
+    .venue-links a {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+    .venue-links a:hover {
+        color: var(--primary);
+    }
+    @media (max-width: 768px) {
+        .venue-links {
+            column-count: 1;
+        }
+    }
+</style>
