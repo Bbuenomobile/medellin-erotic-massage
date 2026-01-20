@@ -1161,13 +1161,10 @@ body.menu-open {
     transition: all 0.3s ease;
 }
 
-/* CRITICAL: Force icon sizes in contact buttons */
-.contact-btn svg,
-.contact-btn .btn-icon {
-    width: 22px !important;
-    height: 22px !important;
-    min-width: 22px;
-    max-width: 22px;
+/* Emoji icons - fixed size */
+.contact-icon {
+    font-size: 1.2rem;
+    line-height: 1;
     flex-shrink: 0;
 }
 
@@ -1177,13 +1174,6 @@ body.menu-open {
     color: var(--primary);
     text-decoration: none;
     transform: translateX(4px);
-}
-
-.btn-icon {
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-    color: var(--primary);
 }
 
 .phone-btn:hover {
@@ -1555,18 +1545,11 @@ body.menu-open {
 .footer-email {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     color: rgba(255,255,255,0.8);
     text-decoration: none;
     font-size: 0.9rem;
     transition: all 0.2s ease;
-}
-
-.footer-whatsapp svg,
-.footer-email svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
 }
 
 .footer-whatsapp:hover {
